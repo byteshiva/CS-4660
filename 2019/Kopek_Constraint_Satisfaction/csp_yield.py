@@ -13,11 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from typing import Generic, TypeVar, Dict, List, Optional
 from abc import ABC, abstractmethod
 
-V = TypeVar('V') # variable type
-D = TypeVar('D') # domain type
+V = TypeVar('V')  # variable type
+D = TypeVar('D')  # domain type
 
 
 # Base class for all constraints
@@ -37,8 +38,8 @@ class Constraint(Generic[V, D], ABC):
 # that determine whether a particular variable's domain selection is valid
 class CSP(Generic[V, D]):
     def __init__(self, variables: List[V], domains: Dict[V, List[D]]) -> None:
-        self.variables: List[V] = variables # variables to be constrained
-        self.domains: Dict[V, List[D]] = domains # domain of each variable
+        self.variables: List[V] = variables  # variables to be constrained
+        self.domains: Dict[V, List[D]] = domains  # domain of each variable
         self.constraints: Dict[V, List[Constraint[V, D]]] = {}
         for variable in self.variables:
             self.constraints[variable] = []
@@ -60,11 +61,11 @@ class CSP(Generic[V, D]):
                 return False
         return True
 
-    def backtracking_search(self, assignment: Dict[V, D] = {}):  # -> Optional[Dict[V, D]]:
+    # noinspection PyDefaultArgument
+    def backtracking_search(self, assignment: Dict[V, D] = {}) -> Optional[Dict[V, D]]:
         # assignment is complete if every variable is assigned (our base case)
         if len(assignment) == len(self.variables):
             yield assignment
-            # return assignment
 
         else:
             # get all variables in the CSP but not in the assignment
@@ -82,5 +83,4 @@ class CSP(Generic[V, D]):
                         # if we didn't find the result, we will end up backtracking
                         if result is not None:
                             yield result
-                            # return result
             return None
