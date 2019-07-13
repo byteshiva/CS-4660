@@ -1,1 +1,27 @@
+import cp.
+import util.
 
+main => 
+  main(["8"]).
+  
+main([NStr]) => 
+  N = to_integer(NStr),
+  queens(N, Q),
+  print_board(N, Q).
+
+queens(N, Q) =>
+    Q = new_list(N),
+    Q :: 1..N,
+    all_different(Q),
+    all_different([$(Q[I]-I) : I in 1..N]),
+    all_different([$(Q[I]+I) : I in 1..N]),
+    solve([ff],Q).
+
+print_board(N, Qs) =>
+  println(N),
+  println(Qs),
+  println(" "),
+  foreach(C in Qs)
+    R =   join([" " : _ in 1..5] ++ [" ." : _ in 1..C-1] ++ [" Q"] ++ [" ." : _ in 1..N-C]),
+    println(R)
+  end. 
