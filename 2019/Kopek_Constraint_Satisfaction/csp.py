@@ -43,6 +43,8 @@ class CSP(Generic[V, D]):
         self.variables: List[V] = variables  # variables to be constrained
         self.domains: Dict[V, List[D]] = domains  # domain of each variable
         self.constraints: Dict[V, List[Constraint[V, D]]] = {}
+        self.low_mark = len(variables)
+        self.count = 0
         for variable in self.variables:
             self.constraints[variable] = []
             if variable not in self.domains:
@@ -63,6 +65,7 @@ class CSP(Generic[V, D]):
                 return False
         return True
 
+
     # noinspection PyDefaultArgument
     def backtracking_search(self, assignment: Dict[V, D] = {}) -> Optional[Dict[V, D]]:
         # assignment is complete if every variable is assigned (our base case)
@@ -71,8 +74,12 @@ class CSP(Generic[V, D]):
 
         # get all variables in the CSP but not in the assignment
         unassigned: List[V] = [v for v in self.variables if v not in assignment]
-
-        # get the every possible domain value of the first unassigned variable
+        nbr_left = len(unassigned)
+        if nbr_left <= self.low_mark:
+            self.count += 1
+            print(nbr_left, end='\n' if self.count % 20 == 0 else ' ')
+            self.low_mark = nbr_left
+        # get the possible domain values of the first unassigned variable
         first: V = unassigned[0]
         for value in self.domains[first]:
             local_assignment = assignment.copy()

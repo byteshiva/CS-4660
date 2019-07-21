@@ -73,7 +73,7 @@ class CSP(Generic[V, D]):
             # get all variables in the CSP but not in the assignment
             unassigned: List[V] = [v for v in self.variables if v not in assignment]
 
-            # get the every possible domain value of the first unassigned variable
+            # get the possible domain values of the first unassigned variable
             first: V = unassigned[0]
             for value in self.domains[first]:
                 local_assignment = assignment.copy()

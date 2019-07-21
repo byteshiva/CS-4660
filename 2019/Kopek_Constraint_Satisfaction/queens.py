@@ -31,15 +31,14 @@ def n_queens(board_size=8, all_solutions=True ):
         from csp import Constraint, CSP
 
     class QueensConstraint(Constraint):
-
-        def __init__(self, column_position_var_ids) -> None:
+        def __init__(self, column_position_var_ids: List[int]) -> None:
             # column_position_var_ids is defined in outer scope
-            super( ).__init__(column_position_var_ids)
+            super().__init__(column_position_var_ids)
             self.column_position_var_ids: List[int] = column_position_var_ids
 
         def satisfied(self, assignment: Dict[int, int]) -> bool:
             # q1c = queen 1 column, q1r = queen 1 row
-            for q1c, q1r in assignment.items( ):
+            for (q1c, q1r) in assignment.items( ):
                 # q2c = queen 2 column
                 for q2c in range(q1c + 1, len(self.column_position_var_ids) + 1):
                     if q2c in assignment:
@@ -82,4 +81,4 @@ def time_rounded(timer_start, precision=3):
 
 
 if __name__ == "__main__":
-    n_queens(board_size=8, all_solutions=True)
+    n_queens(board_size=20, all_solutions=False)
