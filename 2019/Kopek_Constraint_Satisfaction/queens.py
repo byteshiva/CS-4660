@@ -23,7 +23,8 @@ from typing import Dict, List
 from queens_display import display_solution
 
 
-def run_queens(board_size=8, all_solutions=True ):
+# This function is defined so that its arguments ae available to the class and functions defined inside.
+def n_queens(board_size=8, all_solutions=True ):
     if all_solutions:
         from csp_yield import Constraint, CSP
     else:
@@ -31,7 +32,7 @@ def run_queens(board_size=8, all_solutions=True ):
 
     class QueensConstraint(Constraint):
 
-        def __init__(self) -> None:
+        def __init__(self, column_position_var_ids) -> None:
             # column_position_var_ids is defined in outer scope
             super( ).__init__(column_position_var_ids)
             self.column_position_var_ids: List[int] = column_position_var_ids
@@ -49,29 +50,31 @@ def run_queens(board_size=8, all_solutions=True ):
                             return False
             return True  # no conflict
 
-    column_position_var_ids: List[int] = [i + 1 for i in range(board_size)]
-    column_position_values: List[int] = [i + 1 for i in range(board_size)]
-    rows: Dict[int, List[int]] = {column_pos_var_id: column_position_values.copy( )
-                                  for column_pos_var_id in column_position_var_ids}
-
-    csp: CSP = CSP(column_position_var_ids, rows)
-    csp.add_constraint(QueensConstraint())
-    solution_nbr = 0
-    timer_start = timer( )
-    if all_solutions:
-        for solution in csp.backtracking_search( ):
-            solution_nbr += 1
-            display_solution(solution, time_rounded(timer_start), solution_nbr)
-            timer_start = timer( )
-        if solution_nbr == 0:
-            print('\nNo solutions.')
-        print(f'Final search time: {time_rounded(timer_start)} sec.')
-    else:
-        solution = csp.backtracking_search( )
-        if solution:
-            display_solution(solution, time_rounded(timer_start))
+    def run_queens():
+        column_position_var_ids: List[int] = [i + 1 for i in range(board_size)]
+        column_position_values: List[int] = [i + 1 for i in range(board_size)]
+        rows: Dict[int, List[int]] = {column_pos_var_id: column_position_values.copy( )
+                                      for column_pos_var_id in column_position_var_ids}
+        csp: CSP = CSP(column_position_var_ids, rows)
+        csp.add_constraint(QueensConstraint(column_position_var_ids))
+        solution_nbr = 0
+        timer_start = timer( )
+        if all_solutions:
+            for solution in csp.backtracking_search( ):
+                solution_nbr += 1
+                display_solution(solution, time_rounded(timer_start), solution_nbr)
+                timer_start = timer( )
+            if solution_nbr == 0:
+                print('\nNo solutions.')
+            print(f'Final search time: {time_rounded(timer_start)} sec.')
         else:
-            print('\nNo solutions.')
+            solution = csp.backtracking_search( )
+            if solution:
+                display_solution(solution, time_rounded(timer_start))
+            else:
+                print('\nNo solutions.')
+
+    run_queens()  # End n_queens function
 
 
 def time_rounded(timer_start, precision=3):
@@ -79,4 +82,4 @@ def time_rounded(timer_start, precision=3):
 
 
 if __name__ == "__main__":
-    run_queens(board_size=8, all_solutions=False)
+    n_queens(board_size=8, all_solutions=True)
