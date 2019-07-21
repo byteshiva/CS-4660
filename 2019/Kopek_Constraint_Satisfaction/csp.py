@@ -2,6 +2,8 @@
 # From Classic Computer Science Problems in Python Chapter 3
 # Copyright 2018 David Kopec
 #
+# Modified by Russ Abbott (2019)
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
