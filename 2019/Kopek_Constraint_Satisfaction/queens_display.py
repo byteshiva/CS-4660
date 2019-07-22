@@ -4,18 +4,19 @@ from typing import Dict, Optional
 
 
 def display_solution(solution: Dict[int, int], time: float, solution_nbr: Optional[int] = None) -> None:
-    # The solver is 1-basesd; the display code assumes the solve is 0-based.
+    # The solver is 1-based; the display code assumes the solve is 0-based.
     solution = {row-1: col-1 for (row, col) in solution.items()}
     sol = sorted([(r, c) for (r, c) in solution.items(  )])
     placement_vector = [c for (_, c) in sol]
-    solution_display = layout(placement_vector, len(solution))
+    solution_display = layout(placement_vector)
     if solution_nbr:
         print(f'\n{solution_nbr}.', end='')
     print(f'\n{solution_display}\nTime: {time} sec.')
 
 
-def layout(placement_vector: [int], board_size: int) -> str:
-    """ Format the placement for display. """
+def layout(placement_vector: [int]) -> str:
+    """ Format the placement_vector for display. """
+    board_size = len(placement_vector)
     offset = ord('a')
     # Generate the column headers.
     col_hdrs = ' '*(4+int(log10(board_size))) + \
