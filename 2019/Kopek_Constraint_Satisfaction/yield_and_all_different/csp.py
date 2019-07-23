@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Generic, Iterable, Dict, List, Optional, Set, Tuple, TypeVar
+from typing import Generic, Dict, Iterable, List, Optional, TypeVar
 from abc import ABC, abstractmethod
 
 V = TypeVar('V')  # variable type
@@ -34,11 +34,6 @@ class Constraint(Generic[V, D], ABC):
     def satisfied(self, assignment: Dict[V, D]) -> bool:
         ...
 
-    # Must be overridden by subclasses
-    @abstractmethod
-    def propagate(self, next_var: int, next_var_value: int, unassigned: Dict[int, Set[int]]) -> Dict[int, Set[int]]:
-        ...
-
 
 def all_different(iterable: Iterable) -> bool:
     lst = list(iterable)
@@ -50,9 +45,9 @@ def all_different(iterable: Iterable) -> bool:
 # that have ranges of values known as domains of type D and constraints
 # that determine whether a particular variable's domain selection is valid
 class CSP(Generic[V, D]):
-    def __init__(self, variables: List[V], domains: Dict[V, Set[D]]) -> None:
+    def __init__(self, variables: List[V], domains: Dict[V, List[D]]) -> None:
         self.variables: List[V] = variables  # variables to be constrained
-        self.domains: Dict[V, Set[D]] = domains  # domain of each variable
+        self.domains: Dict[V, List[D]] = domains  # domain of each variable
         self.constraints: Dict[V, List[Constraint[V, D]]] = {}
         self.low_mark = len(variables)
         self.count = 0
@@ -68,59 +63,37 @@ class CSP(Generic[V, D]):
             else:
                 self.constraints[variable].append(constraint)
 
-    # noinspection PyDefaultArgument
-    def backtracking_search(self, assignment: Dict[V, D], unassigned: Dict[V, Set[D]],
-                            search_strategy='ff',
-                            propagate_constraints=True,
-                            check_constraints=True) -> Optional[Dict[V, D]]:
-        # assignment is complete there are no unassigned variables left
-        if not unassigned:
-            return assignment
-
-        # Print progress if at or below low-water mark.
-        nbr_left = len(unassigned)
-        if nbr_left <= self.low_mark:
-            self.count += 1
-            print(nbr_left, end='\n' if self.count % 20 == 0 else ' ')
-            self.low_mark = nbr_left
-
-        # select the variable to assign next. Default
-        (next_var, next_var_domain) = self.select_next_var(search_strategy, unassigned)
-        for value in next_var_domain:
-            extended_assignment = assignment.copy()
-            extended_assignment[next_var] = value
-            next_unassigned = unassigned
-            if propagate_constraints:
-                for constraint in self.constraints[next_var]:
-                    next_unassigned = constraint.propagate(next_var, value, next_unassigned)
-            # if we're still consistent, we recurse (continue)
-            if not check_constraints or self.consistent(next_var, extended_assignment):
-                result: Optional[Dict[V, D]] = \
-                                  self.backtracking_search(extended_assignment, next_unassigned,
-                                                           search_strategy=search_strategy,
-                                                           propagate_constraints=propagate_constraints,
-                                                           check_constraints=check_constraints)
-                # if we didn't find the result, we will end up backtracking
-                if result is not None:
-                    return result
-        return None
-
     # Check if the value assignment is consistent by checking all constraints
-    # for the given variable against it.
-    # May not need this if we propagate_constraints. Then only consistent values remain in the domains.
+    # for the given variable against it
     def consistent(self, variable: V, assignment: Dict[V, D]) -> bool:
         for constraint in self.constraints[variable]:
             if not constraint.satisfied(assignment):
                 return False
         return True
 
-    @staticmethod
-    def select_next_var(strategy: str, unassigned: Dict[V, Set[D]]) -> Tuple[V, Set[D]]:
-        if strategy == 'ff':  # strategy == fast_fail. Take the variable with the smallest remaining domain.
-            next_var = min(unassigned, key=lambda v: len(unassigned[v]))
-        else:  # strategy == 'default' Take the first unassigned variable
-            next_var = [*unassigned.keys()][0]
 
-        next_var_domain = unassigned[next_var]
+    # noinspection PyDefaultArgument
+    def backtracking_search(self, assignment: Dict[V, D] = {}) -> Optional[Dict[V, D]]:
+        # assignment is complete if every variable is assigned (our base case)
+        if len(assignment) == len(self.variables):
+            return assignment
 
-        return (next_var, next_var_domain)
+        # get all variables in the CSP but not in the assignment
+        unassigned: List[V] = [v for v in self.variables if v not in assignment]
+        nbr_left = len(unassigned)
+        if nbr_left <= self.low_mark:
+            self.count += 1
+            print(nbr_left, end='\n' if self.count % 20 == 0 else ' ')
+            self.low_mark = nbr_left
+        # get the possible domain values of the first unassigned variable
+        first: V = unassigned[0]
+        for value in self.domains[first]:
+            local_assignment = assignment.copy()
+            local_assignment[first] = value
+            # if we're still consistent, we recurse (continue)
+            if self.consistent(first, local_assignment):
+                result: Optional[Dict[V, D]] = self.backtracking_search(local_assignment)
+                # if we didn't find the result, we will end up backtracking
+                if result is not None:
+                    return result
+        return None
