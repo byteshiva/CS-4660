@@ -70,8 +70,9 @@ class CSP(Generic[V, D]):
 
     # noinspection PyDefaultArgument
     def backtracking_search(self, assignment: Dict[V, D], unassigned: Dict[V, Set[D]],
-                            search_strategy='ff', propagate_constraints=True, check_constraints=False) \
-                                                                                            -> Optional[Dict[V, D]]:
+                            search_strategy='ff',
+                            propagate_constraints=True,
+                            check_constraints=True) -> Optional[Dict[V, D]]:
         # assignment is complete there are no unassigned variables left
         if not unassigned:
             return assignment
@@ -94,7 +95,11 @@ class CSP(Generic[V, D]):
                     next_unassigned = constraint.propagate(next_var, value, next_unassigned)
             # if we're still consistent, we recurse (continue)
             if not check_constraints or self.consistent(next_var, extended_assignment):
-                result: Optional[Dict[V, D]] = self.backtracking_search(extended_assignment, next_unassigned)
+                result: Optional[Dict[V, D]] = \
+                                  self.backtracking_search(extended_assignment, next_unassigned,
+                                                           search_strategy=search_strategy,
+                                                           propagate_constraints=propagate_constraints,
+                                                           check_constraints=check_constraints)
                 # if we didn't find the result, we will end up backtracking
                 if result is not None:
                     return result

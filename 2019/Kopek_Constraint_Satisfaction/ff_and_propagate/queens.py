@@ -20,9 +20,8 @@
 from timeit import default_timer as timer
 from typing import Dict, List, Set
 
-# from csp import all_different, Constraint, CSP
-from csp_yield import all_different, Constraint, CSP
-from queens_display import display_solution
+from ff_and_propagate.csp import all_different, Constraint
+from ff_and_propagate.queens_display import display_solution
 
 
 class QueensConstraint(Constraint):
@@ -53,7 +52,13 @@ class QueensConstraint(Constraint):
         return all_different_left_diags
 
 
-def n_queens(board_size=8, search_strategy='ff', propagate_constraints=True, check_constraints=False):
+def n_queens(board_size=8, all_solutions=False,
+             search_strategy='ff', propagate_constraints=True, check_constraints=False):
+    if all_solutions:
+        from ff_and_propagate.csp_yield import CSP
+    else:
+        from ff_and_propagate.csp import CSP
+
     column_vars: List[int] = [i + 1 for i in range(board_size)]
     row_values: List[int] = [i + 1 for i in range(board_size)]
     column_domains: Dict[int, Set[int]] = {column_var: set(row_values) for column_var in column_vars}
@@ -61,20 +66,30 @@ def n_queens(board_size=8, search_strategy='ff', propagate_constraints=True, che
     csp.add_constraint(QueensConstraint(column_vars))
     solution_nbr = 0
     timer_start = timer( )
-    for solution in csp.backtracking_search({}, column_domains,
-                                            search_strategy=search_strategy,
-                                            propagate_constraints=propagate_constraints,
-                                            check_constraints=check_constraints):
-        solution_nbr += 1
-        display_solution(solution, time_rounded(timer_start), solution_nbr)
-        if input('Next? (y/n) > ') != 'y':
-            return
-        timer_start = timer( )
-    if solution_nbr == 0:
-        print('\nNo solutions.')
+    if all_solutions:
+        for solution in csp.backtracking_search({}, column_domains,
+                                                search_strategy=search_strategy,
+                                                propagate_constraints=propagate_constraints,
+                                                check_constraints=check_constraints):
+            solution_nbr += 1
+            display_solution(solution, time_rounded(timer_start), solution_nbr)
+            if input('Next? (y/n) > ') != 'y':
+                return
+            timer_start = timer( )
+        if solution_nbr == 0:
+            print('\nNo solutions.')
+        else:
+            print(f'\nNo more solutions. Total solutions: {solution_nbr}')
+        print(f'Final search time: {time_rounded(timer_start)} sec.')
     else:
-        print(f'\nNo more solutions. Total solutions: {solution_nbr}')
-    print(f'Final search time: {time_rounded(timer_start)} sec.')
+        solution = csp.backtracking_search({}, column_domains,
+                                           search_strategy=search_strategy,
+                                           propagate_constraints=propagate_constraints,
+                                           check_constraints=check_constraints)
+        if solution:
+            display_solution(solution, time_rounded(timer_start))
+        else:
+            print('\nNo solutions.')
 
 
 def time_rounded(timer_start, precision=3):
@@ -83,5 +98,6 @@ def time_rounded(timer_start, precision=3):
 
 if __name__ == "__main__":
 
-    # Time about 0.001 - 0.002 sec
-    n_queens(board_size=20, search_strategy='ff', propagate_constraints=True, check_constraints=True)
+    # Time about 0.002 sec
+    n_queens(board_size=20, all_solutions=False,
+             search_strategy='ff', propagate_constraints=True, check_constraints=True)
