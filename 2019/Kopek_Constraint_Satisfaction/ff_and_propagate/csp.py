@@ -16,8 +16,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Generic, Iterable, Dict, List, Optional, Set, Tuple, TypeVar
 from abc import ABC, abstractmethod
+from typing import Generic, Iterable, Dict, List, Optional, Set, Tuple, TypeVar
 
 V = TypeVar('V')  # variable type
 D = TypeVar('D')  # domain type
@@ -72,6 +72,7 @@ class CSP(Generic[V, D]):
     def backtracking_search(self, assignment: Dict[V, D], unassigned: Dict[V, Set[D]],
                             search_strategy='ff',
                             propagate_constraints=True,
+                            order_domain=True,
                             check_constraints=True) -> Optional[Dict[V, D]]:
         # assignment is complete there are no unassigned variables left
         if not unassigned:
@@ -84,17 +85,18 @@ class CSP(Generic[V, D]):
             print(nbr_left, end='\n' if self.count % 20 == 0 else ' ')
             self.low_mark = nbr_left
 
-        # select the variable to assign next. Default
-        (next_var, next_var_domain) = select_next_var(search_strategy, unassigned)
+        # select the variable to assign next.
+        (next_var, next_var_domain) = select_next_var(search_strategy, order_domain, unassigned)
         for value in next_var_domain:
             extended_assignment = assignment.copy()
             extended_assignment[next_var] = value
             next_unassigned = unassigned
             if propagate_constraints:
                 for constraint in self.constraints[next_var]:
+                    # next_unassigned will be None if some domain is empty.
                     next_unassigned = constraint.propagate(next_var, value, next_unassigned)
             # if we're still consistent, we recurse (continue)
-            if not check_constraints or self.consistent(next_var, extended_assignment):
+            if next_unassigned and not check_constraints or self.consistent(next_var, extended_assignment):
                 result: Optional[Dict[V, D]] = \
                                   self.backtracking_search(extended_assignment, next_unassigned,
                                                            search_strategy=search_strategy,
@@ -115,12 +117,17 @@ class CSP(Generic[V, D]):
         return True
 
 
-def select_next_var(strategy: str, unassigned: Dict[V, Set[D]]) -> Tuple[V, Set[D]]:
+def select_next_var(strategy: str, order_domain, unassigned: Dict[V, Set[D]]) -> Tuple[V, List[D]]:
     if strategy == 'ff':  # strategy == fast_fail. Take the variable with the smallest remaining domain.
         next_var = min(unassigned, key=lambda v: len(unassigned[v]))
     else:  # strategy == 'default' Take the first unassigned variable
         next_var = [*unassigned.keys()][0]
 
     next_var_domain = unassigned[next_var]
+    if not next_var_domain or not order_domain:
+        return (next_var, list(next_var_domain))
 
-    return (next_var, next_var_domain)
+    else:  # Order the remaining domain values to favor the ones in the middle.
+        avg_unassigned = (max(next_var_domain) + min(next_var_domain))/2
+        next_var_domain = sorted(next_var_domain, key=lambda v: abs(v-avg_unassigned))
+        return (next_var, next_var_domain)

@@ -18,7 +18,7 @@
 # limitations under the License.
 
 from timeit import default_timer as timer
-from typing import Dict, List, Set
+from typing import Dict, List, Optional, Set
 
 from ff_and_propagate.csp import all_different, Constraint
 from ff_and_propagate.queens_display import display_solution
@@ -29,13 +29,15 @@ class QueensConstraint(Constraint):
         super().__init__(column_vars)
         self.column_vars: List[int] = column_vars
 
-    def propagate(self, next_var: int, next_var_value: int, unassigned: Dict[int, Set[int]]) -> Dict[int, Set[int]]:
+    def propagate(self,
+                  next_var: int, next_var_value: int,
+                  unassigned: Dict[int, Set[int]]) -> Optional[Dict[int, Set[int]]]:
         next_unassigned = {var_i: self.reduce_domain(next_var, next_var_value, var_i, var_i_domain)
                            for (var_i, var_i_domain) in unassigned.items( ) if var_i != next_var}
-        return next_unassigned
+        return None if {} in next_unassigned.values() else next_unassigned
 
     @staticmethod
-    def reduce_domain(next_var, next_var_value, var_i, var_i_domain):
+    def reduce_domain(next_var, next_var_value, var_i, var_i_domain) -> Set[int]:
         diff = abs(next_var - var_i)
         return var_i_domain - {next_var_value, next_var_value + diff, next_var_value - diff}
 
@@ -53,7 +55,7 @@ class QueensConstraint(Constraint):
 
 
 def n_queens(board_size=8, all_solutions=False,
-             search_strategy='ff', propagate_constraints=True, check_constraints=False):
+             search_strategy='ff', propagate_constraints=True, order_domain=True, check_constraints=False):
     if all_solutions:
         from ff_and_propagate.csp_yield import CSP
     else:
@@ -70,6 +72,7 @@ def n_queens(board_size=8, all_solutions=False,
         for solution in csp.backtracking_search({}, column_domains,
                                                 search_strategy=search_strategy,
                                                 propagate_constraints=propagate_constraints,
+                                                order_domain=order_domain,
                                                 check_constraints=check_constraints):
             solution_nbr += 1
             display_solution(solution, time_rounded(timer_start), solution_nbr)
@@ -85,6 +88,7 @@ def n_queens(board_size=8, all_solutions=False,
         solution = csp.backtracking_search({}, column_domains,
                                            search_strategy=search_strategy,
                                            propagate_constraints=propagate_constraints,
+                                           order_domain=order_domain,
                                            check_constraints=check_constraints)
         if solution:
             display_solution(solution, time_rounded(timer_start))
@@ -99,5 +103,5 @@ def time_rounded(timer_start, precision=3):
 if __name__ == "__main__":
 
     # Try 777. (But not all this fast. Some get stuck.)
-    n_queens(board_size=777, all_solutions=False,
-             search_strategy='ff', propagate_constraints=True, check_constraints=True)
+    n_queens(board_size=777, all_solutions=True,
+             search_strategy='ff', propagate_constraints=True, order_domain=True, check_constraints=True)
