@@ -85,7 +85,7 @@ class CSP(Generic[V, D]):
             self.low_mark = nbr_left
 
         # select the variable to assign next. Default
-        (next_var, next_var_domain) = self.select_next_var(search_strategy, unassigned)
+        (next_var, next_var_domain) = select_next_var(search_strategy, unassigned)
         for value in next_var_domain:
             extended_assignment = assignment.copy()
             extended_assignment[next_var] = value
@@ -114,13 +114,13 @@ class CSP(Generic[V, D]):
                 return False
         return True
 
-    @staticmethod
-    def select_next_var(strategy: str, unassigned: Dict[V, Set[D]]) -> Tuple[V, Set[D]]:
-        if strategy == 'ff':  # strategy == fast_fail. Take the variable with the smallest remaining domain.
-            next_var = min(unassigned, key=lambda v: len(unassigned[v]))
-        else:  # strategy == 'default' Take the first unassigned variable
-            next_var = [*unassigned.keys()][0]
+# @staticmethod
+def select_next_var(strategy: str, unassigned: Dict[V, Set[D]]) -> Tuple[V, Set[D]]:
+    if strategy == 'ff':  # strategy == fast_fail. Take the variable with the smallest remaining domain.
+        next_var = min(unassigned, key=lambda v: len(unassigned[v]))
+    else:  # strategy == 'default' Take the first unassigned variable
+        next_var = [*unassigned.keys()][0]
 
-        next_var_domain = unassigned[next_var]
+    next_var_domain = unassigned[next_var]
 
-        return (next_var, next_var_domain)
+    return (next_var, next_var_domain)

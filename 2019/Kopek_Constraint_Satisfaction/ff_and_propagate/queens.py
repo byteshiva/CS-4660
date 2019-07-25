@@ -98,6 +98,6 @@ def time_rounded(timer_start, precision=3):
 
 if __name__ == "__main__":
 
-    # Time about 0.002 sec
-    n_queens(board_size=20, all_solutions=False,
+    # Try 777. (But not all this fast. Some get stuck.)
+    n_queens(board_size=777, all_solutions=False,
              search_strategy='ff', propagate_constraints=True, check_constraints=True)

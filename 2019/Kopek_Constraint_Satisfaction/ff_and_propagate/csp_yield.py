@@ -17,34 +17,36 @@
 # limitations under the License.
 
 from typing import Generic, Iterable, Dict, List, Optional, Set, Tuple, TypeVar
-from abc import ABC, abstractmethod
+# from abc import ABC, abstractmethod
+
+from csp import Constraint, select_next_var
 
 V = TypeVar('V')  # variable type
 D = TypeVar('D')  # domain type
 
 
-# Base class for all constraints
-class Constraint(Generic[V, D], ABC):
-    # The variables that the constraint is between
-    def __init__(self, variables: List[V]) -> None:
-        self.variables = variables
-
-    # Must be overridden by subclasses
-    @abstractmethod
-    def satisfied(self, assignment: Dict[V, D]) -> bool:
-        ...
-
-    # Must be overridden by subclasses
-    @abstractmethod
-    def propagate(self, next_var: int, next_var_value: int, unassigned: Dict[int, Set[int]]) -> Dict[int, Set[int]]:
-        ...
-
-
-def all_different(iterable: Iterable) -> bool:
-    lst = list(iterable)
-    st = set(lst)
-    return len(lst) == len(st)
-
+# # Base class for all constraints
+# class Constraint(Generic[V, D], ABC):
+#     # The variables that the constraint is between
+#     def __init__(self, variables: List[V]) -> None:
+#         self.variables = variables
+#
+#     # Must be overridden by subclasses
+#     @abstractmethod
+#     def satisfied(self, assignment: Dict[V, D]) -> bool:
+#         ...
+#
+#     # Must be overridden by subclasses
+#     @abstractmethod
+#     def propagate(self, next_var: int, next_var_value: int, unassigned: Dict[int, Set[int]]) -> Dict[int, Set[int]]:
+#         ...
+#
+#
+# def all_different(iterable: Iterable) -> bool:
+#     lst = list(iterable)
+#     st = set(lst)
+#     return len(lst) == len(st)
+#
 
 # A constraint satisfaction problem consists of variables of type V
 # that have ranges of values known as domains of type D and constraints
@@ -89,7 +91,7 @@ class CSP(Generic[V, D]):
                     self.low_mark = nbr_left
 
             # select the variable to assign next.
-            (next_var, next_var_domain) = self.select_next_var(search_strategy, unassigned)
+            (next_var, next_var_domain) = select_next_var(search_strategy, unassigned)
             for value in next_var_domain:
                 extended_assignment = assignment.copy( )
                 extended_assignment[next_var] = value
@@ -118,13 +120,13 @@ class CSP(Generic[V, D]):
                 return False
         return True
 
-    @staticmethod
-    def select_next_var(strategy: str, unassigned: Dict[V, Set[D]]) -> Tuple[V, Set[D]]:
-        if strategy == 'ff':  # strategy == fast_fail. Take the variable with the smallest remaining domain.
-            next_var = min(unassigned, key=lambda v: len(unassigned[v]))
-        else:  # strategy == 'default' Take the first unassigned variable
-            next_var = [*unassigned.keys()][0]
-
-        next_var_domain = unassigned[next_var]
-
-        return (next_var, next_var_domain)
+    # @staticmethod
+    # def select_next_var(strategy: str, unassigned: Dict[V, Set[D]]) -> Tuple[V, Set[D]]:
+    #     if strategy == 'ff':  # strategy == fast_fail. Take the variable with the smallest remaining domain.
+    #         next_var = min(unassigned, key=lambda v: len(unassigned[v]))
+    #     else:  # strategy == 'default' Take the first unassigned variable
+    #         next_var = [*unassigned.keys()][0]
+    #
+    #     next_var_domain = unassigned[next_var]
+    #
+    #     return (next_var, next_var_domain)
