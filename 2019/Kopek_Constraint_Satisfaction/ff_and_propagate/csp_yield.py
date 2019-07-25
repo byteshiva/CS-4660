@@ -2,7 +2,7 @@
 # From Classic Computer Science Problems in Python Chapter 3
 # Copyright 2018 David Kopec
 #
-# Modified by Russ Abbott (2019)
+# Modified by Russ Abbott (July 2019)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,37 +16,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Generic, Iterable, Dict, List, Optional, Set, Tuple, TypeVar
-# from abc import ABC, abstractmethod
+from typing import Generic, Dict, List, Optional, Set, TypeVar
 
 from csp import Constraint, select_next_var
 
 V = TypeVar('V')  # variable type
 D = TypeVar('D')  # domain type
 
-
-# # Base class for all constraints
-# class Constraint(Generic[V, D], ABC):
-#     # The variables that the constraint is between
-#     def __init__(self, variables: List[V]) -> None:
-#         self.variables = variables
-#
-#     # Must be overridden by subclasses
-#     @abstractmethod
-#     def satisfied(self, assignment: Dict[V, D]) -> bool:
-#         ...
-#
-#     # Must be overridden by subclasses
-#     @abstractmethod
-#     def propagate(self, next_var: int, next_var_value: int, unassigned: Dict[int, Set[int]]) -> Dict[int, Set[int]]:
-#         ...
-#
-#
-# def all_different(iterable: Iterable) -> bool:
-#     lst = list(iterable)
-#     st = set(lst)
-#     return len(lst) == len(st)
-#
 
 # A constraint satisfaction problem consists of variables of type V
 # that have ranges of values known as domains of type D and constraints
@@ -121,4 +97,3 @@ class CSP(Generic[V, D]):
             if not constraint.satisfied(assignment):
                 return False
         return True
-

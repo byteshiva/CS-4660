@@ -2,7 +2,7 @@
 # From Classic Computer Science Problems in Python Chapter 3
 # Copyright 2018 David Kopec
 #
-# Modified by Russ Abbott (Jouy, 2019)
+# Modified by Russ Abbott (July 2019)
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
