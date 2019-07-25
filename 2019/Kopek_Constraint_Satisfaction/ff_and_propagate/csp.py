@@ -114,7 +114,7 @@ class CSP(Generic[V, D]):
                 return False
         return True
 
-# @staticmethod
+
 def select_next_var(strategy: str, unassigned: Dict[V, Set[D]]) -> Tuple[V, Set[D]]:
     if strategy == 'ff':  # strategy == fast_fail. Take the variable with the smallest remaining domain.
         next_var = min(unassigned, key=lambda v: len(unassigned[v]))
