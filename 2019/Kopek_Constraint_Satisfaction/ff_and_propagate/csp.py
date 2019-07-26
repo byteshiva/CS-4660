@@ -101,6 +101,7 @@ class CSP(Generic[V, D]):
                                   self.backtracking_search(extended_assignment, next_unassigned,
                                                            search_strategy=search_strategy,
                                                            propagate_constraints=propagate_constraints,
+                                                           order_domain=order_domain,
                                                            check_constraints=check_constraints)
                 # if we didn't find the result, we will end up backtracking
                 if result is not None:

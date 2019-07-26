@@ -79,10 +79,10 @@ class CSP(Generic[V, D]):
                         next_unassigned = constraint.propagate(next_var, value, next_unassigned)
                 # if we're still consistent, we recurse (continue)
                 if next_unassigned and not check_constraints or self.consistent(next_var, extended_assignment):
-
                     for result in self.backtracking_search(extended_assignment, next_unassigned,
                                                            search_strategy=search_strategy,
                                                            propagate_constraints=propagate_constraints,
+                                                           order_domain=order_domain,
                                                            check_constraints=check_constraints):
                         # if we didn't find the result, we will end up backtracking
                         if result is not None:
