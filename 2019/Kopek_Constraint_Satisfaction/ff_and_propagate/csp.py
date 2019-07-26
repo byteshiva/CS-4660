@@ -125,10 +125,11 @@ def select_next_var(strategy: str, order_domain, unassigned: Dict[V, Set[D]]) ->
         next_var = [*unassigned.keys()][0]
 
     next_var_domain = unassigned[next_var]
+    # not next_var_domain is true if next_var_domain is empty
     if not next_var_domain or not order_domain:
         return (next_var, list(next_var_domain))
 
     else:  # Order the remaining domain values to favor the ones in the middle.
-        avg_unassigned = (max(next_var_domain) + min(next_var_domain))/2
-        next_var_domain = sorted(next_var_domain, key=lambda v: abs(v-avg_unassigned))
+        central_unassigned = (max(next_var_domain) + min(next_var_domain))/2
+        next_var_domain = sorted(next_var_domain, key=lambda v: abs(v-central_unassigned))
         return (next_var, next_var_domain)
