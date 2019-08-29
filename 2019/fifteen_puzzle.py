@@ -237,14 +237,15 @@ class FifteenPuzzle:
         :param steps: The number of quasi-random moves to make from the solved state.
         :return A shuffled Board.
         """
-        puzzle_board: Board_Dict = self.goal_dict
+        # Work with tuples of (man_dist, board_dict)
+        md_board: Tuple[int, Board_Dict] = (0, self.goal_dict)
         for i in range(steps):
-            neighbors: List[Board_Dict] = self.neighbors(puzzle_board)
+            md_neighbors: List[Tuple[int, Board_Dict]] = [(self.man_dist(n), n) for n in self.neighbors(md_board[1])]
             # Sort the neighbors by man_dist (high to low).
-            sorted_neighbors = sorted(neighbors, key=lambda n: self.man_dist(n), reverse=True)
+            sorted_md_neighbors = sorted(md_neighbors, key=lambda md_n: md_n[0], reverse=True)
             # Select randomly one of the two most disordered.
-            puzzle_board = choice(sorted_neighbors[:2])
-        return puzzle_board
+            md_board = choice(sorted_md_neighbors[:2])
+        return md_board[1]
 
 
 if __name__ == '__main__':
