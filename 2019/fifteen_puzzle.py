@@ -70,8 +70,8 @@ class FifteenPuzzle:
                 if new_man_dist < min_man_dist:
                     print(f'{new_man_dist}({frontier.qsize()})', end=' ')
                     print_counter += 1
-                    if print_counter > 0 and print_counter % 10 == 0:
-                        print(f'\nmin_man_dist (queue size): ', end=' ')
+                    if min_man_dist > 0 and print_counter % 10 == 0:
+                        print(f'\nmin_man_dist (queue size): ', end='')
                     min_man_dist = new_man_dist
             # update() expects a collection of things to add to the set.
             # In this case the collection is a list of one thing.
@@ -95,7 +95,7 @@ class FifteenPuzzle:
         """
         path = None
         frontier = [(self.man_dist(start), [start])]
-        print(f'expanded_nodes (out of {max_expanded_nodes})(queue size):  ', end=' ')
+        print(f'expanded_nodes (out of {max_expanded_nodes})(queue size): ', end=' ')
         expanded: Set[str] = set()
         expanded_nodes = 0
         while frontier:
