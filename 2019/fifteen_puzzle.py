@@ -112,7 +112,7 @@ class FifteenPuzzle:
             # Sort in reverse for dfs because we push the sorted elements into the Frontier.
             # Want to push the worst first and the best last so that the best is at the
             # front of the frontier.
-            for (md, neighbor) in self.sorted_neighbors(end_node, reverse=(search_type=='dfs')):
+            for (md, neighbor) in self.sorted_neighbors(end_node, reverse=(search_type == 'dfs')):
                 if self.board_to_str(neighbor) in expanded:
                     continue
                 insertion_position = 0 if search_type == 'dfs' else len(frontier)
@@ -129,7 +129,7 @@ class FifteenPuzzle:
         return (expanded_nodes, path)
 
     @staticmethod
-    def find_blank(puzzle_board: Board_Dict) -> Tuple[int, int]:
+    def find_the_blank(puzzle_board: Board_Dict) -> Tuple[int, int]:
         """ Finds where the blank (represented by 0) is.
         :param puzzle_board: The current state of the puzzle_board
         :return: the (row, col) of tile 0.
@@ -173,7 +173,7 @@ class FifteenPuzzle:
         :parameter: puzzle_board: Board_Dict; the current state of the board
         :returns: a List[Board_Dict] of possible successor states.
         """
-        (row, col) = self.find_blank(puzzle_board)
+        (row, col) = self.find_the_blank(puzzle_board)
         neighbrs = [self.move_blank(puzzle_board, row, col, row+row_delta, col+col_delta)
                     for (row_delta, col_delta) in [(-1, 0), (1, 0), (0, -1), (0, 1)]
                     if 0 <= row+row_delta <= 3 and 0 <= col+col_delta <= 3]
@@ -195,6 +195,7 @@ class FifteenPuzzle:
     def print_result(self, srch_name: str, expanded_nodes: int, time: float, path: List[Board_Dict]):
         """
         Print the results of the search
+        :param srch_name: The name of the search
         :param expanded_nodes: The number of nodes that were expanded
         :param time: The time taken by the search
         :param path: The path returned by the search.
@@ -274,7 +275,7 @@ class FifteenPuzzle:
 
 if __name__ == '__main__':
     puzzle = FifteenPuzzle()
-    shuffle_steps = 25
+    shuffle_steps = 17
     start: Board_Dict = puzzle.shuffle(shuffle_steps)
 
     expanded_nodes = puzzle.run_puzzle('A*', start, puzzle.a_star_search)
