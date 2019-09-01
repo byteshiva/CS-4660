@@ -16,14 +16,12 @@ Board_Dict = Dict[Tuple[int, int], int]
 class FifteenPuzzle:
 
     def __init__(self):
-        self.goal_array = ((1, 2, 3, 4),
-                           (5, 6, 7, 8),
-                           (9, 10, 11, 12),
-                           (13, 14, 15, 0))
-        self.nbr_of_rows = self.nbr_of_cols = len(self.goal_array)
-        self.goal_dict: Board_Dict = {(row, col): self.goal_array[row][col]
-                                                        for row in range(self.nbr_of_rows)
-                                                        for col in range(self.nbr_of_cols)}
+        goal_array = ((1, 2, 3, 4),
+                      (5, 6, 7, 8),
+                      (9, 10, 11, 12),
+                      (13, 14, 15, 0))
+        self.nbr_of_rows = self.nbr_of_cols = len(goal_array)
+        self.goal_dict = self.board_array_to_board_dict(goal_array)
         # The inverse-goal_dict tells you the correct (row, col) position of any value.
         self.inverse_goal_dict: Dict[int, Tuple[int, int]] = {val: row_col for (row_col, val) in self.goal_dict.items()}
 
@@ -80,6 +78,12 @@ class FifteenPuzzle:
             expanded.update([end_node_str])
             expanded_nodes_count += 1
         return (expanded_nodes_count, path)
+
+    def board_array_to_board_dict(self, board_array):
+        goal_dict: Board_Dict = {(row, col): board_array[row][col]
+                                      for row in range(self.nbr_of_rows)
+                                      for col in range(self.nbr_of_cols)}
+        return goal_dict
 
     def board_to_str(self, puzzle_board: Board_Dict) -> str:
         """ Turn a board into a string that represents it.
@@ -275,8 +279,36 @@ class FifteenPuzzle:
 
 if __name__ == '__main__':
     puzzle = FifteenPuzzle()
-    shuffle_steps = 17
-    start: Board_Dict = puzzle.shuffle(shuffle_steps)
+
+    # Use either a randomly generate board or a specified one.
+    # shuffle_steps = 17
+    # start: Board_Dict = puzzle.shuffle(shuffle_steps)
+
+    # Given the following start board:
+    #
+    # A* search
+    # Expanded nodes: 20
+    # Elapsed time: 0.0 sec
+    # Path length: 16.
+    #
+    # Depth-first search
+    # Expanded nodes: 2631
+    # Elapsed time: 0.22 sec
+    # Path length: 2632.
+    #
+    # Breadth-first search
+    # Expanded nodes: 100001
+    # Elapsed time: 116.22 sec
+    # Path length: 16.
+    #
+
+    puzzle_board = ((2, 3, 11, 4),
+                    (1, 5, 15, 7),
+                    (9, 0,  6, 8),
+                    (13, 10, 14, 12))
+
+    # noinspection PyRedeclaration
+    start = puzzle.board_array_to_board_dict(puzzle_board)
 
     expanded_nodes = puzzle.run_puzzle('A*', start, puzzle.a_star_search)
     puzzle.run_puzzle('Depth-first', start, puzzle.bds_dfs, 'dfs', min(100000, 5000*expanded_nodes))
