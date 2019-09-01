@@ -234,8 +234,10 @@ class FifteenPuzzle:
         :param max_expanded_nodes: the maximum number of nodes to be expanded
         :return: the actual number of nodes expanded
         """
-        print(f'\n{" | |"*20}')
-        print(f'Starting {srch_name} search with: ')
+        print(f'{" "*10}{".   "*20}.')
+        print(f'{" "*10}{" . ."*20}')
+        print(f'{" "*10}{"  . "*20}')
+        print(f'\nStarting {srch_name} search with: ')
         puzzle.print_board(start)
         start_time = time()
         (expanded_nodes, path) = search_algo(start, search_type, max_expanded_nodes)
