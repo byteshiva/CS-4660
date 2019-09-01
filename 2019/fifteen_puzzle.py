@@ -281,9 +281,12 @@ if __name__ == '__main__':
     puzzle = FifteenPuzzle()
 
     # Use either a randomly generate board or a specified one.
+
+    # Use a randomly generated board
     # shuffle_steps = 17
     # start: Board_Dict = puzzle.shuffle(shuffle_steps)
 
+    # Use a specific board.
     # Given the following start board:
     #
     # A* search
@@ -301,7 +304,7 @@ if __name__ == '__main__':
     # Elapsed time: 116.22 sec
     # Path length: 16.
     #
-
+              
     puzzle_board = ((2, 3, 11, 4),
                     (1, 5, 15, 7),
                     (9, 0,  6, 8),
