@@ -28,9 +28,11 @@ class FifteenPuzzle:
         self.inverse_goal_dict: Dict[int, Tuple[int, int]] = {val: row_col for (row_col, val) in self.goal_dict.items()}
 
     # noinspection PyUnusedLocal
-    def a_star_search(self, start: Board_Dict, max_expanded_nodes=None) -> Tuple[int, List[Board_Dict]]:
+    def a_star_search(self, start: Board_Dict, search_type: str = None, max_expanded_nodes: int = None) \
+                                                                                    -> Tuple[int, List[Board_Dict]]:
         """
         A* search search
+        :param search_type: Not used
         :param start: An initial Board state in the form of a Board_Dict
         :param max_expanded_nodes: not used
         :return: (expanded nodes count, the path)
@@ -87,8 +89,9 @@ class FifteenPuzzle:
         ordered_values = ','.join([str(puzzle_board[key]) for key in self.goal_dict.keys()])
         return ordered_values
 
-    def breadth_first_search(self, start: Board_Dict, max_expanded_nodes: int) -> Tuple[int, List[Board_Dict]]:
-        """ Breadth First algorithm
+    def bds_dfs(self, start: Board_Dict, search_type: str, max_expanded_nodes: int) -> Tuple[int, List[Board_Dict]]:
+        """ Breadth-first or depth-first search -- with ordered neighbors
+        :param search_type: 'bfs' or 'dfs'
         :param max_expanded_nodes: The maximum number of nodes to allow to be expanded before quitting.
         :param start: Board_Dict: the starting state for the search
         :return (expanded nodes count, (A* value, The path))
@@ -106,10 +109,14 @@ class FifteenPuzzle:
             end_node_str = self.board_to_str(end_node)
             if end_node_str in expanded:
                 continue
-            for neighbor in self.neighbors(end_node):
+            # Sort in reverse for dfs because we push the sorted elements into the Frontier.
+            # Want to push the worst first and the best last so that the best is at the
+            # front of the frontier.
+            for (md, neighbor) in self.sorted_neighbors(end_node, reverse=(search_type=='dfs')):
                 if self.board_to_str(neighbor) in expanded:
                     continue
-                frontier.append((self.man_dist(neighbor), path + [neighbor]))
+                insertion_position = 0 if search_type == 'dfs' else len(frontier)
+                frontier.insert(insertion_position, (md, path + [neighbor]))
             expanded.update([end_node_str])
             expanded_nodes += 1
             if expanded_nodes % 5000 == 0:
@@ -170,6 +177,7 @@ class FifteenPuzzle:
         neighbrs = [self.move_blank(puzzle_board, row, col, row+row_delta, col+col_delta)
                     for (row_delta, col_delta) in [(-1, 0), (1, 0), (0, -1), (0, 1)]
                     if 0 <= row+row_delta <= 3 and 0 <= col+col_delta <= 3]
+        # assert None not in neighbrs
         return neighbrs
 
     def print_board(self, board: Board_Dict):
@@ -184,21 +192,22 @@ class FifteenPuzzle:
             self.print_row(row)
         print()
 
-    def print_result(self, expanded_nodes: int, time: float, path: List[Board_Dict]):
+    def print_result(self, srch_name: str, expanded_nodes: int, time: float, path: List[Board_Dict]):
         """
         Print the results of the search
         :param expanded_nodes: The number of nodes that were expanded
         :param time: The time taken by the search
         :param path: The path returned by the search.
         """
-        print(f'Expanded nodes: {expanded_nodes}')
-        print(f'Elapsed time: {round(time, 2)} sec')
-        print(f'Path length: {len(path)}.\n')
         for (i, board) in enumerate(path):
             pos = i+1
             md = self.man_dist(board)
             print(f'{pos}+{md}={pos+md}.')
             self.print_board(board)
+        print(f'{srch_name} search')
+        print(f'Expanded nodes: {expanded_nodes}')
+        print(f'Elapsed time: {round(time, 2)} sec')
+        print(f'Path length: {len(path)}.\n')
 
     @staticmethod
     def print_row(row: List[int]):
@@ -212,23 +221,26 @@ class FifteenPuzzle:
 
     @staticmethod
     def run_puzzle(srch_name: str, start: Board_Dict,
-                   search_algo: Callable[[Board_Dict, int], Tuple[int, List[Board_Dict]]],
+                   search_algo: Callable[[Board_Dict, str, int], Tuple[int, List[Board_Dict]]],
+                   search_type: str = None,
                    max_expanded_nodes: int = -1) -> int:
         """
         Run the indicated search and display the results.
 
+        :param search_type: The search type if 'bfs' or 'dfs'
         :param srch_name: The printable name of the search
         :param start: The starting board position
         :param search_algo: the search algorithm
         :param max_expanded_nodes: the maximum number of nodes to be expanded
         :return: the actual number of nodes expanded
         """
-        print(f'\nStarting {srch_name} search with: ')
+        print(f'\n{" | |"*20}')
+        print(f'Starting {srch_name} search with: ')
         puzzle.print_board(start)
         start_time = time()
-        (expanded_nodes, path) = search_algo(start, max_expanded_nodes)
+        (expanded_nodes, path) = search_algo(start, search_type, max_expanded_nodes)
         print('\n')
-        puzzle.print_result(expanded_nodes, time() - start_time, path)
+        puzzle.print_result(srch_name, expanded_nodes, time() - start_time, path)
         return expanded_nodes
 
     def shuffle(self, steps: int) -> Board_Dict:
@@ -239,19 +251,30 @@ class FifteenPuzzle:
         """
         puzzle_board: Board_Dict = self.goal_dict
         for i in range(steps):
-            # Work with tuples of (man_dist, board_dict)
-            md_neighbors: List[Tuple[int, Board_Dict]] = [(self.man_dist(n), n) for n in self.neighbors(puzzle_board)]
-            # Sort the neighbors by man_dist (high to low).
-            sorted_md_neighbors = sorted(md_neighbors, key=lambda md_n: md_n[0], reverse=True)
+            sorted_neighbors = self.sorted_neighbors(puzzle_board, reverse=True)
             # Select randomly one of the two most disordered.
-            puzzle_board = choice(sorted_md_neighbors[:2])[1]
+            puzzle_board = choice(sorted_neighbors[:2])[1]
         return puzzle_board
+
+    def sorted_neighbors(self, puzzle_board, reverse: bool = False) -> List[Tuple[int, Board_Dict]]:
+        """
+        Generate and sort by man_dist the neighbors of puzzle_board
+        :param puzzle_board:
+        :param reverse: True -> sort High-to-low
+        :return: A list of neighbors of puzzle-board sorted by man_dist
+        """
+        # Work with tuples of (man_dist, board_dict)
+        md_neighbors: List[Tuple[int, Board_Dict]] = [(self.man_dist(n), n) for n in self.neighbors(puzzle_board)]
+        # Sort the neighbors by man_dist.
+        sorted_md_neighbors = sorted(md_neighbors, key=lambda md_n: md_n[0], reverse=reverse)
+        return sorted_md_neighbors
 
 
 if __name__ == '__main__':
     puzzle = FifteenPuzzle()
-    shuffle_steps = 75
+    shuffle_steps = 25
     start: Board_Dict = puzzle.shuffle(shuffle_steps)
 
     expanded_nodes = puzzle.run_puzzle('A*', start, puzzle.a_star_search)
-    puzzle.run_puzzle('Breadth-first', start, puzzle.breadth_first_search, min(100000, 5000*expanded_nodes))
+    puzzle.run_puzzle('Depth-first', start, puzzle.bds_dfs, 'dfs', min(100000, 5000*expanded_nodes))
+    puzzle.run_puzzle('Breadth-first', start, puzzle.bds_dfs, 'bfs', min(100000, 5000*expanded_nodes))
