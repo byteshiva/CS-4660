@@ -280,7 +280,7 @@ class FifteenPuzzle:
 if __name__ == '__main__':
     puzzle = FifteenPuzzle()
 
-    # Use either a randomly generate board or a specified one.
+    # Start with either a randomly generate board or a specified one.
 
     # Use a randomly generated board
     # shuffle_steps = 17
@@ -303,8 +303,7 @@ if __name__ == '__main__':
     # Expanded nodes: 100001
     # Elapsed time: 116.22 sec
     # Path length: 16.
-    #
-              
+
     puzzle_board = ((2, 3, 11, 4),
                     (1, 5, 15, 7),
                     (9, 0,  6, 8),
@@ -314,5 +313,5 @@ if __name__ == '__main__':
     start = puzzle.board_array_to_board_dict(puzzle_board)
 
     expanded_nodes = puzzle.run_puzzle('A*', start, puzzle.a_star_search)
-    puzzle.run_puzzle('Depth-first', start, puzzle.bds_dfs, 'dfs', min(100000, 5000*expanded_nodes))
-    puzzle.run_puzzle('Breadth-first', start, puzzle.bds_dfs, 'bfs', min(100000, 5000*expanded_nodes))
+    puzzle.run_puzzle('Depth-first', start, puzzle.bds_dfs, 'dfs', min(500000, 10000*expanded_nodes))
+    puzzle.run_puzzle('Breadth-first', start, puzzle.bds_dfs, 'bfs', min(500000, 10000*expanded_nodes))
